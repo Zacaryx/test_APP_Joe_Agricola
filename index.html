@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgroControl</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       VISTA: MENÚ PRINCIPAL
+  ═══════════════════════════════════════════ -->
+  <section id="view-menu" class="view active">
+    <header class="app-header">
+      <div class="logo-mark">⬡</div>
+      <h1 class="app-title">AGRO<span>CONTROL</span></h1>
+      <p class="app-sub">Sistema de Monitoreo Agrícola</p>
+    </header>
+
+    <div class="menu-grid">
+      <button class="mode-card" data-mode="produccion">
+        <span class="mode-icon">📡</span>
+        <span class="mode-label">Producción</span>
+        <span class="mode-desc">Conexión real vía Bluetooth a ESP32</span>
+      </button>
+      <button class="mode-card" data-mode="debug-dar">
+        <span class="mode-icon">📤</span>
+        <span class="mode-label">Debug — Dar</span>
+        <span class="mode-desc">Emular ESP32, enviar datos a otro dispositivo</span>
+      </button>
+      <button class="mode-card" data-mode="debug-recibir">
+        <span class="mode-icon">📥</span>
+        <span class="mode-label">Debug — Recibir</span>
+        <span class="mode-desc">Recibir perfiles y datos ficticios</span>
+      </button>
+      <button class="mode-card" data-mode="debug-sin">
+        <span class="mode-icon">🔁</span>
+        <span class="mode-label">Sin Conexión</span>
+        <span class="mode-desc">Simulación interna completa</span>
+      </button>
+    </div>
+
+    <button class="btn-outline" id="btn-go-profiles">
+      ⚙ Editar Perfiles
+    </button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       VISTA: CONEXIÓN / ESTADO
+  ═══════════════════════════════════════════ -->
+  <section id="view-connect" class="view">
+    <div class="view-inner">
+      <button class="btn-back" id="btn-back-from-connect">← Volver</button>
+      <h2 class="view-title" id="connect-title">Conectando…</h2>
+      <div class="status-badge" id="connect-status">Iniciando</div>
+
+      <div class="pulse-ring" id="pulse-ring"></div>
+      <p class="status-info" id="connect-info">Buscando dispositivo Bluetooth…</p>
+
+      <div id="profile-selector-wrap" class="hidden">
+        <h3 class="section-label">Seleccionar Perfil</h3>
+        <ul id="profile-list-connect" class="profile-list-select"></ul>
+        <button class="btn-primary" id="btn-start-monitor">▶ Iniciar Monitor</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       VISTA: MONITOR
+  ═══════════════════════════════════════════ -->
+  <section id="view-monitor" class="view">
+    <div class="monitor-header">
+      <button class="btn-back" id="btn-back-from-monitor">← Salir</button>
+      <div>
+        <span class="mode-pill" id="monitor-mode-pill">—</span>
+        <span class="profile-pill" id="monitor-profile-pill">—</span>
+      </div>
+      <div class="live-dot" id="live-dot"></div>
+    </div>
+
+    <!-- Panel de métricas -->
+    <div class="metrics-grid">
+      <div class="metric-card" id="card-temp">
+        <span class="metric-label">TEMPERATURA</span>
+        <span class="metric-value" id="val-temp">—</span>
+        <span class="metric-unit">°C</span>
+        <div class="metric-range" id="range-temp"></div>
+      </div>
+      <div class="metric-card" id="card-hum">
+        <span class="metric-label">HUMEDAD SUELO</span>
+        <span class="metric-value" id="val-hum">—</span>
+        <span class="metric-unit">%</span>
+        <div class="metric-range" id="range-hum"></div>
+      </div>
+      <div class="metric-card" id="card-ph">
+        <span class="metric-label">pH</span>
+        <span class="metric-value" id="val-ph">—</span>
+        <span class="metric-unit">pH</span>
+        <div class="metric-range" id="range-ph"></div>
+      </div>
+      <div class="metric-card metric-wide" id="card-status">
+        <span class="metric-label">ESTADO GENERAL</span>
+        <span class="metric-value status-text" id="val-status">ESPERANDO</span>
+      </div>
+    </div>
+
+    <!-- Log de eventos -->
+    <div class="log-box">
+      <div class="log-header">
+        <span>REGISTRO DE EVENTOS</span>
+        <button class="btn-clear-log" id="btn-clear-log">Limpiar</button>
+      </div>
+      <ul id="event-log"></ul>
+    </div>
+
+    <!-- Alerta modal -->
+    <div class="alert-overlay hidden" id="alert-overlay">
+      <div class="alert-box">
+        <div class="alert-icon">⚠</div>
+        <h3 id="alert-title">Alerta</h3>
+        <p id="alert-msg">Valor fuera de rango.</p>
+        <button class="btn-primary" id="btn-dismiss-alert">Entendido</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       VISTA: EDITOR DE PERFILES
+  ═══════════════════════════════════════════ -->
+  <section id="view-profiles" class="view">
+    <div class="view-inner">
+      <button class="btn-back" id="btn-back-from-profiles">← Volver</button>
+      <h2 class="view-title">Perfiles de Cultivo</h2>
+
+      <ul id="profiles-list" class="profiles-list"></ul>
+
+      <button class="btn-primary" id="btn-new-profile">+ Nuevo Perfil</button>
+    </div>
+
+    <!-- Modal editor -->
+    <div class="modal-overlay hidden" id="profile-modal">
+      <div class="modal-box">
+        <h3 id="modal-title">Editar Perfil</h3>
+        <div class="field-group">
+          <label>Nombre</label>
+          <input type="text" id="pf-nombre" placeholder="Ej: Tomate" maxlength="24" />
+        </div>
+        <div class="fields-row">
+          <div class="field-group">
+            <label>Temp. Máx (°C)</label>
+            <input type="number" id="pf-temp-max" step="0.1" />
+          </div>
+          <div class="field-group">
+            <label>Temp. Mín (°C)</label>
+            <input type="number" id="pf-temp-min" step="0.1" />
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Humedad Suelo Mín (%)</label>
+          <input type="number" id="pf-hum-min" step="1" min="0" max="100" />
+        </div>
+        <div class="fields-row">
+          <div class="field-group">
+            <label>pH Mínimo</label>
+            <input type="number" id="pf-ph-min" step="0.1" />
+          </div>
+          <div class="field-group">
+            <label>pH Máximo</label>
+            <input type="number" id="pf-ph-max" step="0.1" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-outline" id="btn-modal-cancel">Cancelar</button>
+          <button class="btn-primary" id="btn-modal-save">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
